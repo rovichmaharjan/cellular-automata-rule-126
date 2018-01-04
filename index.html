@@ -19,8 +19,8 @@
         }
 
         .row > div {
-            width: 10px;
-            height: 10px;
+            width: var(--width);
+            height: var(--height);
             background-color: #EEEEEE;
         }
 
@@ -33,6 +33,8 @@
     <script type="text/javascript">
         let totalColumn, totalRow, repeat
 
+        let size = 10
+
         function init() {
             let rowWidth = window.innerWidth
             let rowHeight = window.innerHeight
@@ -40,8 +42,11 @@
             let maxWidth = rowWidth - (rowWidth % 10)
             let maxHeight = rowHeight - (rowHeight % 10)
 
-            totalColumn = maxWidth / 10
-            totalRow = maxHeight / 10
+            totalColumn = maxWidth / size
+            totalRow = maxHeight / size
+
+            document.documentElement.style.setProperty('--width', size + 'px')
+            document.documentElement.style.setProperty('--height', size + 'px')
         }
         
         // Generates a div
