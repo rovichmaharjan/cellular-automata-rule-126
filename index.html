@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Cellular Automata - Rule 93</title>
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .row {
+            display: flex;
+            min-width: 100%;
+            justify-content: center;
+        }
+
+        .row > div {
+            width: 10px;
+            height: 10px;
+            background-color: #EEEEEE;
+        }
+
+        .row > .active {
+            background-color: #BADA55;
+        }
+    </style>
+</head>
+<body>
+    <script type="text/javascript">
+        let totalColumn, totalRow, repeat
+
+        function init() {
+            let rowWidth = window.innerWidth
+            let rowHeight = window.innerHeight
+
+            let maxWidth = rowWidth - (rowWidth % 10)
+            let maxHeight = rowHeight - (rowHeight % 10)
+
+            totalColumn = maxWidth / 10
+            totalRow = maxHeight / 10
+        }
+        
+        // Generates a div
+        function generateDiv() {
+            return document.createElement('div')
+        }
+
+        // Appends a .row to body
+        function createRow() {
+            let newRow = generateDiv()
+            newRow.classList.add('row')
+            document.body.appendChild(newRow)
+            return newRow
+        }
+
+        // Fills a row with enough divs
+        function fillRow(currentRow) {
+            for (let index = 0; index < totalColumn; index++) {
+                let newDiv = generateDiv()
+                currentRow.appendChild(newDiv)
+            }
+
+            return currentRow
+        }
+
+        // Generate a random state of 0 or 1
+        function getARandomState() {
+            return Math.round(Math.random())
+        }
+
+        // Apply active class to divs if getARandomState returns 1
+        function randomizeStateOfFirstRow(firstRow) {
+            firstRow.childNodes.forEach((div) => getARandomState() ? div.classList.add('active') : null)
+        }
+
+        // Get states of old self, its preceeding and its next divs
+        function getRule(parentIndex, itemIndex) {
+            let prevParentIndex = parentIndex - 1
+            let prevLeftIndex = itemIndex - 1 !== -1 ? itemIndex - 1 :  totalColumn - 1
+            let prevRightIndex = itemIndex + 1 !== totalColumn ? itemIndex + 1 :  0
+            let prevLeftItemState = 
+                document.querySelectorAll('.row')[prevParentIndex]
+                    .querySelectorAll('div')[prevLeftIndex]
+                    .classList.contains('active')
+            let prevRightItemState = 
+                document.querySelectorAll('.row')[prevParentIndex]
+                    .querySelectorAll('div')[prevRightIndex]
+                    .classList.contains('active')
+            let prevItemState = 
+                    document.querySelectorAll('.row')[prevParentIndex]
+                        .querySelectorAll('div')[itemIndex]
+                        .classList.contains('active')
+
+            return [
+                prevLeftItemState, 
+                prevItemState, 
+                prevRightItemState
+            ]
+        }
+
+        // Look up table for rule 126
+        let lookUpTable = [
+            {
+                rule: [1, 1, 1],
+                state: 0
+            },
+            {
+                rule: [1, 1, 0],
+                state: 1
+            },
+            {
+                rule: [1, 0, 1],
+                state: 1
+            },
+            {
+                rule: [1, 0, 0],
+                state: 1
+            },
+            {
+                rule: [0, 1, 1],
+                state: 1
+            },
+            {
+                rule: [0, 1, 0],
+                state: 1
+            },
+            {
+                rule: [0, 0, 1],
+                state: 1
+            },
+            {
+                rule: [0, 0, 0],
+                state: 0
+            }
+        ]
+
+        // Return new state
+        function checkState(prevStates) {
+            let matchedRule = lookUpTable.find((currentRule) => 
+                !!currentRule.rule[0] === prevStates[0] &&
+                !!currentRule.rule[1] === prevStates[1] &&
+                !!currentRule.rule[2] === prevStates[2]
+            )
+            return matchedRule.state
+        }
+        
+        // Apply transformation
+        function applyRule(currentRowIndex) {
+            for (let currentDivIndex = 0; currentDivIndex < totalColumn; currentDivIndex++) {
+                let rule = getRule(currentRowIndex, currentDivIndex)
+                let newState = checkState(rule)
+                if(newState) {
+                    document.querySelectorAll('.row')[currentRowIndex]
+                        .querySelectorAll('div')[currentDivIndex]
+                        .classList.add('active')
+                }
+            }
+
+        }
+
+        // Append row applying rules
+        function createTransformedRow() {
+            fillRow(createRow())
+            let rowIndex = document.querySelectorAll('.row').length - 1
+            applyRule(rowIndex);
+        }
+
+
+        // append transformed rows
+        function createAutomata() {
+            let rowIndex = document.querySelectorAll('.row').length
+            if (rowIndex > totalRow - 1)
+                document.querySelector('.row').remove()
+            createTransformedRow()            
+        }
+
+        function startAutomata() {
+            init()
+
+            // Generate first row of randomly assingned divs
+            randomizeStateOfFirstRow(fillRow(createRow()))
+            
+            // Loop rows forever
+            repeat = setInterval(createAutomata, 100)
+        }
+
+        // Pause and restart on resize
+        function onResize() {
+            clearInterval(repeat)
+            document.querySelectorAll('.row').forEach((row) => row.remove())
+            startAutomata()
+        }
+
+        startAutomata()
+
+        window.addEventListener('resize', onResize)
+        
+    </script>
+</body>
+</html>
